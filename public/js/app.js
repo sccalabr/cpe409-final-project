@@ -73,6 +73,7 @@ settingsRequest.done(function(settings){
 $.when.apply($, [feedRequest, subredditRequest, settingsRequest]).done(function() {
    $('#loading_area').hide();
    $('#following_feed').show();
+   $('.favorite').click(favorite);
 });
 
 function commentToHTML(post) {
@@ -80,10 +81,11 @@ function commentToHTML(post) {
    var author = $("<span class='author lead'>by " + post.author + "</span>");
    // var author = $("<h4 class='lead'>" + post.author + "</h4>");
    var subreddit = $("<span class='subreddit text-muted'>in r/" + post.subreddit + "</span>");
+   var favoriteIcon = $("<span class=\"favorite glyphicon glyphicon-star-empty\" aria-hidden=\"true\" data-name=\"" + post.name + "\"></span>");
    // The jQuery madness happening here is to decode html entities
    var body = $('<p class="comment_body"></p>').html(post.body_html).text();
 
-   return container.append([author, subreddit, body]);
+   return container.append([author, subreddit, favoriteIcon, body]);
 };
 
 function subToHTML(post) {
@@ -120,6 +122,27 @@ function addSubredditSlider(subredditName) {
 
 function addFollowUser(user) {
    $("#following").append("<li>/u/" + user + "</li>")
+}
+
+/**
+ * Should be called when the favorite icon is clicked. Not sure if we want
+ * toggling or not.
+ */
+function favorite() {
+   var self = this;
+   var id = $(this).attr('data-name');
+   var data = {
+      "id": id
+   };
+
+   if ($(self).hasClass(('glyphicon-star')))
+      return;
+
+   var request = $.post('/favorite', JSON.stringify(data));
+   request.done(function() {
+      $(self).removeClass('glyphicon-star-empty');
+      $(self).addClass('glyphicon-star');
+   });
 }
 
 $("#uButton").click(function() {
